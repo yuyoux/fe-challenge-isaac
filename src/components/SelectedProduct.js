@@ -20,7 +20,7 @@ const SelectedProduct = ({ item, selectProduct }) => {
               className="listcard__image"
             />
           </Col>
-          <Col xs="8" className="text-left px-0 ">
+          <Col xs="8" className="text-left px-0">
             <Row>
               <Col>{item.product_name}</Col>
             </Row>

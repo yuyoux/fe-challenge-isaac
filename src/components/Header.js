@@ -8,8 +8,12 @@ import {
   CardFooter,
   Form,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
   Badge
 } from "reactstrap";
+import question from "../assets/question.png";
 
 function Header(props) {
   return (
@@ -27,12 +31,26 @@ function Header(props) {
         <Row>
           <Col xs="3" className="text-left align-self-center pr-0">
             <Form>
-              <Input
-                type="search"
-                name="search"
-                id="exampleSearch"
-                placeholder="Search"
-              ></Input>
+              <InputGroup>
+                <Input
+                  type="search"
+                  name="search"
+                  id="exampleSearch"
+                  placeholder="Search"
+                  style={{ borderRight: "none" }}
+                ></Input>
+                <InputGroupAddon addonType="append">
+                  <InputGroupText
+                    style={{ padding: 0, backgroundColor: "white" }}
+                  >
+                    <img
+                      src={question}
+                      alt="logo"
+                      className="question__image"
+                    />
+                  </InputGroupText>
+                </InputGroupAddon>
+              </InputGroup>
             </Form>
           </Col>
           <Col xs="2"></Col>
