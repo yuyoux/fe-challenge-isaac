@@ -10,6 +10,7 @@ import {
 import "./ProductListItem.scss";
 import { Images_Address } from "../common/config";
 import stock from "../assets/stock.png";
+import HorizontalBarChart from "./HorizontalBarChart";
 
 const formatValue = num => {
   let sign = "+";
@@ -89,18 +90,19 @@ const ProductListItem = ({
               </Col>
               <Col>7.68</Col>
               <Col>
-                {"$" +
-                  (
-                    parseFloat(item.average_sales) *
-                    (parseFloat(item.price) / 100)
-                  ).toFixed(2)}
+                {item.cannibalised
+                  ? "$" + item.cannibalised.addedProductRevenue
+                  : "$" +
+                    (
+                      parseFloat(item.average_sales) *
+                      (parseFloat(item.price) / 100)
+                    ).toFixed(2)}
               </Col>
               <Col
                 className={
                   item.cannibalised
-                    ? selectedProductRevenue -
-                        parseFloat(item.average_sales) *
-                          (parseFloat(item.price) / 100) -
+                    ? item.cannibalised.addedProductRevenue -
+                        item.cannibalised.replacedProductRevenue +
                         item.cannibalised.products.reduce(
                           (a, b) => a + b.revenue,
                           0
@@ -108,9 +110,9 @@ const ProductListItem = ({
                       0
                       ? "netgain--positive"
                       : "netgain--negative"
-                    : selectedProductRevenue -
-                        parseFloat(item.average_sales) *
-                          (parseFloat(item.price) / 100) >
+                    : parseFloat(item.average_sales) *
+                        (parseFloat(item.price) / 100) -
+                        selectedProductRevenue >
                       0
                     ? "netgain--positive"
                     : "netgain--negative"
@@ -119,9 +121,8 @@ const ProductListItem = ({
                 {item.cannibalised
                   ? formatValue(
                       (
-                        selectedProductRevenue -
-                        parseFloat(item.average_sales) *
-                          (parseFloat(item.price) / 100) -
+                        item.cannibalised.addedProductRevenue -
+                        item.cannibalised.replacedProductRevenue +
                         item.cannibalised.products.reduce(
                           (a, b) => a + b.revenue,
                           0
@@ -130,9 +131,9 @@ const ProductListItem = ({
                     )
                   : formatValue(
                       (
-                        selectedProductRevenue -
                         parseFloat(item.average_sales) *
-                          (parseFloat(item.price) / 100)
+                          (parseFloat(item.price) / 100) -
+                        selectedProductRevenue
                       ).toFixed(2)
                     )}
               </Col>
@@ -141,7 +142,9 @@ const ProductListItem = ({
         </Row>
       </CardBody>
       {item.product_code === selectedChangeProduct && item.cannibalised ? (
-        <Row className="px-5">{item.product_code}</Row>
+        <Row className="px-5">
+          <HorizontalBarChart item={item} />
+        </Row>
       ) : null}
     </Card>
   );
