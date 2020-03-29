@@ -1,0 +1,28 @@
+@import "../styles/variables";
+@import "../styles/mixins";
+
+div .listcard__tilte {
+  background-color: #e4e6ea;
+}
+
+div .listcard__content {
+  background-color: white;
+}
+
+div .card-text__tabletitle {
+  font-size: 20px;
+  font-weight: 600;
+  border-right: 2px solid $border;
+}
+
+div .card-text__tabletitle2 {
+  font-size: 20px;
+  font-weight: 600;
+  padding-left: 35px;
+}
+
+div .card-text__tabletitle3 {
+  font-size: 20px;
+  font-weight: 600;
+  padding-left: 0;
+}

@@ -1,0 +1,23 @@
+@import "../styles/variables";
+@import "../styles/mixins";
+
+div .card-body__content {
+  background-color: white;
+  border-bottom: 2px solid $border;
+  cursor: pointer;
+}
+
+img.listcard__image {
+  width: 50%;
+}
+
+div .listcard__subtitle {
+  font-size: 20px;
+  color: $dark;
+}
+
+div.listcard__figure {
+  font-weight: 400;
+  padding-right: 0;
+  padding-left: 0;
+}

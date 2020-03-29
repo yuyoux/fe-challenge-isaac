@@ -1,1 +1,1 @@
-export const API_Address = "https://test.swipejobs.com";
+export const Images_Address = "https://cdn.vendinganalytics.com/reyes-ccb/tb/";
