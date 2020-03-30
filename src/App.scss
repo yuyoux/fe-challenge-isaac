@@ -79,7 +79,12 @@ img.question__image {
 
 div .chart__wrapper {
   width: 90%;
-  height: 400px;
+  height: 300px;
+}
+
+div .chart__wrapper--updated {
+  width: 90%;
+  height: 600px;
 }
 
 .bs-popover-bottom > .arrow::after,

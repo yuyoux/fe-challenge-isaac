@@ -6,6 +6,9 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
   const [data, setData] = useState([]);
   const [label, setLabel] = useState([]);
   const [color, setColor] = useState([]);
+  const [code, setCode] = useState([]);
+
+  //TODO: chart js cannot set color/font size for specific labels
 
   const setInit = item => {
     setLabel([
@@ -36,6 +39,7 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
         item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0)
       ).toFixed(2)
     ]);
+    setCode([]);
   };
 
   useEffect(() => {
@@ -57,6 +61,7 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
       ];
       let newlabels = ["Added Product", "Replaced Product(s)"];
       let newcolor = ["#94c945", "#e5664a"];
+      let newcode = ["", ""];
       let enindex =
         item.item.cannibalised.addedProductRevenue -
         item.item.cannibalised.replacedProductRevenue;
@@ -65,9 +70,11 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
         newlabels.push(i.name);
         newdata.push([newval, enindex]);
         newcolor.push("#e5664a");
+        newcode.push(i.code);
         enindex = newval;
       }
-      newlabels.push("+ Net Gain");
+      newlabels.push("- Net Gain");
+      newcode.push("");
       newdata.push(
         (
           item.item.cannibalised.addedProductRevenue -
@@ -75,10 +82,11 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
           item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0)
         ).toFixed(2)
       );
-      newcolor.push("#94c945");
+      newcolor.push("#3c90f7");
       setData(newdata);
       setLabel(newlabels);
       setColor(newcolor);
+      setCode(newcode);
     } else {
       setInit(item);
     }
@@ -99,11 +107,14 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
   };
 
   return (
-    <div className="chart__wrapper">
+    <div
+      className={
+        label.length <= 4 ? "chart__wrapper" : "chart__wrapper--updated"
+      }
+    >
       {item && item.item.cannibalised ? (
         <HorizontalBar
           data={chartData}
-          height="100%"
           options={{
             onClick: function(evt, it) {
               var yLabel = this.scales["y-axis-0"].getValueForPixel(
@@ -113,19 +124,25 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
               if (chartData.labels[yLabel] === "+ Net Gain" && yLabel === 3) {
                 updateData(true);
               } else if (
-                chartData.labels[yLabel] === "+ Net Gain" &&
+                chartData.labels[yLabel] === "- Net Gain" &&
                 yLabel !== 3
               )
                 updateData(false);
             },
+            responsive: true,
             plugins: {
               datalabels: {
                 color: "white",
                 anchor: "end",
                 align: "start",
                 formatter: function(value, context) {
-                  if (
-                    label[context.dataIndex] === "Added Product" ||
+                  if (label[context.dataIndex] === "Added Product") {
+                    let num = (value[1] - value[0]).toFixed(2);
+                    if (num < 0) {
+                      num = num.toString().substr(1);
+                    }
+                    return "$" + num;
+                  } else if (
                     label[context.dataIndex] === "Replaced Product(s)" ||
                     label[context.dataIndex] === "Cannibalised Product(s)"
                   ) {
@@ -133,8 +150,11 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
                     if (num < 0) {
                       num = num.toString().substr(1);
                     }
-                    return "$" + num;
-                  } else if (label[context.dataIndex] === "+ Net Gain") {
+                    return "-$" + num;
+                  } else if (
+                    label[context.dataIndex] === "+ Net Gain" ||
+                    label[context.dataIndex] === "- Net Gain"
+                  ) {
                     let num = value;
                     if (num < 0) {
                       num = num.toString().substr(1);
@@ -156,7 +176,57 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
               display: false
             },
             tooltips: {
-              enabled: false
+              enabled: true,
+              callbacks: {
+                title: function(tooltipItem, data) {
+                  return data["labels"][tooltipItem[0]["index"]].replace(
+                    /(\+|-)/gi,
+                    ""
+                  );
+                },
+                label: function(tooltipItem, data) {
+                  if (
+                    data.datasets[0].data[tooltipItem.index].length === 2 &&
+                    tooltipItem.index !== 0
+                  ) {
+                    return (
+                      "-$" +
+                      (
+                        data.datasets[0].data[tooltipItem.index][1] -
+                        data.datasets[0].data[tooltipItem.index][0]
+                      ).toFixed(2)
+                    );
+                  } else if (
+                    data.datasets[0].data[tooltipItem.index].length === 2 &&
+                    tooltipItem.index === 0
+                  ) {
+                    return (
+                      "$" +
+                      (
+                        data.datasets[0].data[tooltipItem.index][1] -
+                        data.datasets[0].data[tooltipItem.index][0]
+                      ).toFixed(2)
+                    );
+                  } else {
+                    return "$" + data.datasets[0].data[tooltipItem.index];
+                  }
+                },
+                beforeLabel: function(tooltipItem, data) {
+                  if (code[tooltipItem.index] === undefined) {
+                    return "";
+                  } else {
+                    return code[tooltipItem.index];
+                  }
+                }
+              },
+              backgroundColor: "white",
+              titleFontSize: 16,
+              titleFontColor: "black",
+              bodyFontColor: "#e5664a",
+              bodyFontSize: 16,
+              displayColors: false,
+              borderColor: "#babcbf",
+              borderWidth: 1
             },
             scales: {
               yAxes: [
@@ -189,6 +259,8 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
                     display: false
                   },
                   ticks: {
+                    fontSize: 18,
+                    fontColor: "#babcbf",
                     stepSize: 2
                   }
                 }
