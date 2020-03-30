@@ -4,48 +4,95 @@ import "chartjs-plugin-datalabels";
 
 const HorizontalBarChart = (item, selectedProductRevenue) => {
   const [data, setData] = useState([]);
+  const [label, setLabel] = useState([]);
+  const [color, setColor] = useState([]);
+
+  const setInit = item => {
+    setLabel([
+      "Added Product",
+      "Replaced Product(s)",
+      "Cannibalised Product(s)",
+      "+ Net Gain"
+    ]);
+    setColor(["#94c945", "#e5664a", "#e5664a", "#3c90f7"]);
+    setData([
+      [0, item.item.cannibalised.addedProductRevenue],
+      [
+        item.item.cannibalised.addedProductRevenue -
+          item.item.cannibalised.replacedProductRevenue,
+        item.item.cannibalised.addedProductRevenue
+      ],
+
+      [
+        item.item.cannibalised.addedProductRevenue -
+          item.item.cannibalised.replacedProductRevenue +
+          item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0),
+        item.item.cannibalised.addedProductRevenue -
+          item.item.cannibalised.replacedProductRevenue
+      ],
+      (
+        item.item.cannibalised.addedProductRevenue -
+        item.item.cannibalised.replacedProductRevenue +
+        item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0)
+      ).toFixed(2)
+    ]);
+  };
 
   useEffect(() => {
     console.log(item.item.cannibalised);
     if (item.item) {
-      setData([
+      setInit(item);
+    }
+  }, [item, selectedProductRevenue]);
+
+  const updateData = updateFlag => {
+    if (item.item && updateFlag) {
+      let newdata = [
         [0, item.item.cannibalised.addedProductRevenue],
         [
           item.item.cannibalised.addedProductRevenue -
             item.item.cannibalised.replacedProductRevenue,
           item.item.cannibalised.addedProductRevenue
-        ],
-
-        [
-          item.item.cannibalised.addedProductRevenue -
-            item.item.cannibalised.replacedProductRevenue +
-            item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0),
-          item.item.cannibalised.addedProductRevenue -
-            item.item.cannibalised.replacedProductRevenue
-        ],
+        ]
+      ];
+      let newlabels = ["Added Product", "Replaced Product(s)"];
+      let newcolor = ["#94c945", "#e5664a"];
+      let enindex =
+        item.item.cannibalised.addedProductRevenue -
+        item.item.cannibalised.replacedProductRevenue;
+      for (const i of item.item.cannibalised.products) {
+        let newval = enindex + i.revenue;
+        newlabels.push(i.name);
+        newdata.push([newval, enindex]);
+        newcolor.push("#e5664a");
+        enindex = newval;
+      }
+      newlabels.push("+ Net Gain");
+      newdata.push(
         (
           item.item.cannibalised.addedProductRevenue -
           item.item.cannibalised.replacedProductRevenue +
           item.item.cannibalised.products.reduce((a, b) => a + b.revenue, 0)
         ).toFixed(2)
-      ]);
+      );
+      newcolor.push("#94c945");
+      setData(newdata);
+      setLabel(newlabels);
+      setColor(newcolor);
+    } else {
+      setInit(item);
     }
-  }, [item, selectedProductRevenue]);
+  };
 
   const chartData = {
-    labels: [
-      "Added Product",
-      "Replaced Product(s)",
-      "Cannibalised Product(s)",
-      "Net Gain"
-    ],
+    labels: label,
     datasets: [
       {
-        backgroundColor: ["#94c945", "#e5664a", "#e5664a", "#3c90f7"],
-        hoverBackgroundColor: ["#94c945", "#e5664a", "#e5664a", "#3c90f7"],
-        borderColor: ["#94c945", "#e5664a", "#e5664a", "#3c90f7"],
+        backgroundColor: color,
+        hoverBackgroundColor: color,
+        borderColor: color,
         borderWidth: 1,
-        hoverBorderColor: ["#94c945", "#e5664a", "#e5664a", "#3c90f7"],
+        hoverBorderColor: color,
         data: data
       }
     ]
@@ -58,24 +105,43 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
           data={chartData}
           height="100%"
           options={{
+            onClick: function(evt, it) {
+              var yLabel = this.scales["y-axis-0"].getValueForPixel(
+                evt.offsetY
+              );
+              console.log(evt);
+              if (chartData.labels[yLabel] === "+ Net Gain" && yLabel === 3) {
+                updateData(true);
+              } else if (
+                chartData.labels[yLabel] === "+ Net Gain" &&
+                yLabel !== 3
+              )
+                updateData(false);
+            },
             plugins: {
               datalabels: {
                 color: "white",
                 anchor: "end",
                 align: "start",
                 formatter: function(value, context) {
-                  if (value.length === 2) {
+                  if (
+                    label[context.dataIndex] === "Added Product" ||
+                    label[context.dataIndex] === "Replaced Product(s)" ||
+                    label[context.dataIndex] === "Cannibalised Product(s)"
+                  ) {
                     let num = (value[1] - value[0]).toFixed(2);
                     if (num < 0) {
                       num = num.toString().substr(1);
                     }
                     return "$" + num;
-                  } else {
+                  } else if (label[context.dataIndex] === "+ Net Gain") {
                     let num = value;
                     if (num < 0) {
                       num = num.toString().substr(1);
                     }
                     return "$" + num;
+                  } else {
+                    return "";
                   }
                 },
 
@@ -96,7 +162,6 @@ const HorizontalBarChart = (item, selectedProductRevenue) => {
               yAxes: [
                 {
                   barThickness: 28,
-
                   display: true,
                   scaleLabel: {
                     display: true

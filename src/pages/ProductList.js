@@ -14,7 +14,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 
 const ProductList = props => {
   const [startIndex, setStartIndex] = useState(0);
-  const [endIndex, setEndIndex] = useState(7);
+  const [endIndex, setEndIndex] = useState(15);
   const [selectedProducts, setSelectedProducts] = useState(currentProducts);
   const [capacity, setCapacity] = useState(productCapacity);
   const [productChangeData, setProductChangeData] = useState([]);
@@ -48,7 +48,7 @@ const ProductList = props => {
   //infinite loading of products
   const onLoad = () => {
     setTimeout(() => {
-      setEndIndex(endIndex + 8);
+      setEndIndex(endIndex + 16);
     }, 1000);
   };
 

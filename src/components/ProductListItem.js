@@ -29,18 +29,16 @@ const ProductListItem = ({
   selectedChangeProduct
 }) => {
   return (
-    <Card
-      className="rounded-0 card-text__producttabletitle"
-      onClick={() => {
-        selectChangeProduct(item);
-      }}
-    >
+    <Card className="rounded-0 card-text__producttabletitle">
       <CardBody
         className={
           item.product_code === selectedChangeProduct && item.cannibalised
             ? "py-2 card-body--selected"
             : "py-2"
         }
+        onClick={() => {
+          selectChangeProduct(item);
+        }}
       >
         <Row xs="2">
           <Col>
